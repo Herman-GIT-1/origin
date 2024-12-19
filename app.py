@@ -323,10 +323,6 @@ class Course(db.Model):
 @app.route('/admin_page', methods=['GET', 'POST'])
 @login_required
 def manage_courses():
-    if current_user.account_type != 'admin':
-        flash("Access denied. Only administrators can access this page.", "danger")
-        return redirect(url_for('index'))
-
     if request.method == 'POST':
         name = request.form['name']
         code = request.form['code']
@@ -345,7 +341,7 @@ def manage_courses():
 
     teachers = Teacher.query.all()
     courses = Course.query.all()
-    return render_template('admin/manage_courses.html', courses=courses, teachers=teachers)
+    return render_template('manage_courses.html', courses=courses, teachers=teachers)
 
 @app.route('/admin_page/<int:course_id>', methods=['POST'])
 @login_required

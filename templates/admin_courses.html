@@ -1,7 +1,4 @@
 <div class="mb-4">
-    <h4>Manage Courses</h4>
-    <button class="btn btn-success mb-3" data-toggle="modal" data-target="#addCourseModal">Add New Course</button>
-
     <table class="table table-bordered table-hover">
         <thead class="thead-dark">
             <tr>
@@ -33,41 +30,10 @@
 </div>
 
 <class class="container">
-<div class="modal fade" id="addCourseModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
 <div class="modal-dialog">
     <div class="modal-content">
-        <form method="POST" action="{{ url_for('manage_courses') }}">
-        <div class="modal-header">
-            <h5 class="modal-title" id="exampleModalLabel">Add New Course</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
-        </div>
+        <a href="{{ url_for('manage_courses') }}" class="btn btn-success mb-3">Add Course</a>
         
-            <div class="modal-body">
-                <div class="form-group">
-                    <label for="name">Course Name</label>
-                    <input class="form-control" type="text" name="name" required>
-                </div>
-                <div class="form-group">
-                    <label for="code">Course Code</label>
-                    <input class="form-control" type="text" name="code" required>
-                </div>
-                <div class="form-group">
-                    <label for="teacher_id">Assign Teacher</label>
-                    <select class="form-control" name="teacher_id">
-                        {% for teacher in teachers %}
-                            <option value="{{ teacher.id }}">{{ teacher.username }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                <button type="submit" class="btn btn-success">Add Course</button>
-            </div>
-        </form>
     </div>
-</div>
 </div>
 </class>
