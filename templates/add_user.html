@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Add New User</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <style>
+        body {
+            background: #f8f9fa;
+        }
+        .container {
+            background: #ffffff;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            border-radius: 8px;
+            margin-top: 50px;
+        }
+        h2 {
+            color: #495057;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .form-control:focus {
+            border-color: #5cb85c;
+            box-shadow: 0 0 5px rgba(92, 184, 92, 0.5);
+        }
+        .btn-success {
+            background-color: #5cb85c;
+            border: none;
+        }
+        .btn-success:hover {
+            background-color: #4cae4c;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #868e96;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Add New User</h2>
+        <form method="POST" action="{{ url_for('add_user') }}">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" class="form-control" id="username" name="username" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" class="form-control" id="password" name="password" required>
+            </div>
+            <div class="form-group">
+                <label for="first_name">First Name</label>
+                <input type="text" class="form-control" id="first_name" name="first_name" required>
+            </div>
+            <div class="form-group">
+                <label for="last_name">Last Name</label>
+                <input type="text" class="form-control" id="last_name" name="last_name" required>
+            </div>
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" class="form-control" id="email" name="email">
+            </div>
+            <div class="form-group">
+                <label for="major">Major</label>
+                <input type="text" class="form-control" id="major" name="major">
+            </div>
+            <div class="form-group">
+                <label for="semester">Semester</label>
+                <input type="number" class="form-control" id="semester" name="semester">
+            </div>
+            <div class="text-center">
+                <button type="submit" class="btn btn-success">Add User</button>
+                <a href="{{ url_for('admin_page') }}" class="btn btn-success">Return back</a>
+            </div>
+        </form>
+        <footer class="footer">
+            &copy; 2024 Admin Panel. All rights reserved.
+        </footer>
+    </div>
+</body>
+</html>
