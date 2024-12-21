@@ -395,18 +395,15 @@ def teacher_courses():
 
     courses = Course.query.filter_by(teacher_id=current_user.teacher.id).all()
     students = User.query.filter_by(account_type='user').all()
-    return render_template('teacher/teacher_courses.html', courses=courses, students=students)
+    return render_template('teacher_courses.html', courses=courses, students=students)
 
 
 
 @app.route('/user_page')
 @login_required
-def student_courses():
-    if current_user.account_type != 'user':
-        return redirect(url_for('index'))
-
+def user_courses():
     courses = current_user.courses
-    return render_template('user/user_courses.html', courses=courses)
+    return render_template('user_courses.html', courses=courses)
 
 
 if __name__ == '__main__':
