@@ -7,16 +7,16 @@
 </head>
 <body>
 <header class="d-flex flex-wrap justify-content-center py-3 mb-4 border-bottom">
-    <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-body-emphasis text-decoration-none">
+    <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto btn btn-outline-primary">
         <span class="fs-4">Home</span>
     </a>
     <ul class="nav nav-pills">
-        <li class="nav-item"><a href="{{ url_for('teacher_courses') }}" class="nav-link active">Manage Courses</a></li>
-        <li class="nav-item"><a href="{{ url_for('logout') }}" class="nav-link">Logout</a></li>
+        <li class="nav-item"><a href="{{ url_for('teacher_courses') }}" class="btn btn-outline-primary">Manage Courses</a></li>
+        <li class="nav-item"><a href="{{ url_for('logout') }}" class="btn btn-outline-dark">Logout</a></li>
     </ul>
 </header>
 
-<div class="container mt-4">
+<div class="container mt-4"></div>
     <h3>Assign Grades</h3>
     <form method="POST" action="{{ url_for('teacher_courses') }}">
         <div class="form-group">

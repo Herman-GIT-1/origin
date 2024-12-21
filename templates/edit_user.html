@@ -32,7 +32,13 @@
         </div>
         <div class="form-group">
             <label for="semester">Semester</label>
-            <input type="number" class="form-control" id="semester" name="semester" value="{{ user.semester }}">
+            <select type="number" class="form-select" id="semester" name="semester" value="{{ user.semester }}">
+                <option selected disabled value="">Year</option>
+                <option>1</option>
+                <option>2</option>
+                <option>3</option>
+                <option>4</option>
+                <option>5</option>
         </div>
         <button type="submit" class="btn btn-primary">Update User</button>
     </form>

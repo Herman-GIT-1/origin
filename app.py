@@ -150,9 +150,7 @@ def user_page():
 
 @app.route('/teacher_page')
 @login_required
-def teacher_page():
-    if current_user.account_type != 'teacher':
-        return redirect(url_for('user_page'))  
+def teacher_page(): 
     return render_template('teacher_page.html')
 
 @app.route('/admin', methods=['GET', 'POST'])
@@ -236,10 +234,7 @@ def delete_user(user_id):
 
 @app.route('/add_teacher', methods=['GET', 'POST'])
 @login_required
-def add_teacher():
-    if current_user.account_type != 'admin':
-        return redirect(url_for('index'))
-    
+def add_teacher():    
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
@@ -289,15 +284,10 @@ def edit_teacher(teacher_id):
 @app.route('/delete_teacher/<int:teacher_id>')
 @login_required
 def delete_teacher(teacher_id):
-    if current_user.account_type != 'admin':
-        flash('You do not have permission to perform this action.', 'danger')
-        return redirect(url_for('admin_page'))
-
     teacher = Teacher.query.get(teacher_id)
     if not teacher:
         flash('Teacher not found.', 'danger')
         return redirect(url_for('admin_page'))
-    
     try:
         db.session.delete(teacher)
         db.session.commit()
@@ -376,7 +366,6 @@ def delete_course(course_id):
 @login_required
 def teacher_courses():
     if request.method == 'POST':
-        
         course_id = request.form['course_id']
         user_id = request.form['user_id']
         grade = request.form['grade']
@@ -389,10 +378,8 @@ def teacher_courses():
             enrollment.grade = grade
 
         db.session.commit()
-        flash('Student enrolled/grade updated successfully!', 'success')
         return redirect(url_for('teacher_courses'))
     
-
     courses = Course.query.filter_by(teacher_id=current_user.teacher.id).all()
     students = User.query.filter_by(account_type='user').all()
     return render_template('teacher_courses.html', courses=courses, students=students)

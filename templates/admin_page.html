@@ -12,6 +12,7 @@
 <body>
     <div class="container mt-5">
         <h1 class="text-center mb-4">Admin Dashboard</h1>
+        <a href="{{ url_for('manage_courses') }}" class="btn btn-success mb-3">Add Course</a>
         <a href="{{ url_for('logout') }}" class="btn btn-success mb-3">Log out</a>
       
         <div class="mb-4">
@@ -90,6 +91,7 @@
                 </tbody>
             </table>
         </div>
+       
     </div>
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
         integrity="sha384-qNRpuYw3flS3W4n7MghV8v1eAy0D2ih5GOkCdH/bj+yAbEQ3u6QwXlKluJ2VjZMa"
