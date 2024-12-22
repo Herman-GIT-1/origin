@@ -278,7 +278,6 @@ def edit_teacher(teacher_id):
         db.session.commit()
         flash('Teacher data updated successfully!', 'success')
         return redirect(url_for('admin_page'))
-
     return render_template('edit_teacher.html', teacher=teacher)
 
 @app.route('/delete_teacher/<int:teacher_id>')

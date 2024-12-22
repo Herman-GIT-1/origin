@@ -13,7 +13,7 @@
     <div class="container mt-5">
         <h1 class="text-center mb-4">Admin Dashboard</h1>
         <a href="{{ url_for('manage_courses') }}" class="btn btn-success mb-3">Add Course</a>
-        <a href="{{ url_for('logout') }}" class="btn btn-success mb-3">Log out</a>
+        <a href="{{ url_for('logout') }}" class="btn btn-outline-dark">Log out</a>
       
         <div class="mb-4">
             <h4>Manage Users</h4>
@@ -56,7 +56,7 @@
 
         <div class="mb-5">
             <h4>Manage Teachers</h4>
-            <button class="btn btn-success mb-3" data-toggle="modal" data-target="#addTeacherModal">Add Teacher</button>
+            <a href="{{ url_for('add_teacher') }}" class="btn btn-success mb-3">Add Teacher</a>
             <table class="table table-bordered table-hover">
                 <thead class="thead-dark">
                     <tr>

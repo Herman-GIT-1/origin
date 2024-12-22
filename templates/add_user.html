@@ -66,11 +66,21 @@
             </div>
             <div class="form-group">
                 <label for="major">Major</label>
-                <input type="text" class="form-control" id="major" name="major">
+                <select class="form-control" name="major" id="user.major" required>
+                    {% for course in courses %}
+                        <option value="{{ course.id }}">{{ course.name }}</option>
+                    {% endfor %}
+                </select>
             </div>
             <div class="form-group">
                 <label for="semester">Semester</label>
-                <input type="number" class="form-control" id="semester" name="semester">
+                <select type="number" class="form-control" id="semester" name="semester">
+                <option selected disabled value="">Year</option>
+                <option>1</option>
+                <option>2</option>
+                <option>3</option>
+                <option>4</option>
+                <option>5</option>
             </div>
             <div class="text-center">
                 <button type="submit" class="btn btn-success">Add User</button>
