@@ -41,7 +41,7 @@
             <label for="user_id">Student</label>
             <select name="user_id" class="form-control">
                 {% for student in students %}
-                <option value="{{ student.id }}">{{ student.username }}</option>
+                    <option value="{{ student.id }}">{{ student.username }}</option>
                 {% endfor %}
             </select>
         </div>

@@ -63,7 +63,7 @@ def unauthorized():
 def index():
     return render_template('index.html', user=current_user)
 
-#Modul №1
+#Module №1
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -164,7 +164,7 @@ def admin_page():
     users = User.query.all()
     return render_template('admin_page.html', teachers=teachers, users=users)
 
-#Modul №2
+#Module №2
 
 @app.route('/add_user', methods=['GET', 'POST'])
 @login_required
@@ -230,7 +230,7 @@ def delete_user(user_id):
         flash('User not found.', 'danger')
     return redirect(url_for('admin_page'))
 
-#Modul №3
+#Module №3
 
 @app.route('/add_teacher', methods=['GET', 'POST'])
 @login_required
@@ -295,7 +295,7 @@ def delete_teacher(teacher_id):
         db.session.rollback()
         flash(f'An error occurred: {e}', 'danger')
     return redirect(url_for('admin_page'))
-#Modul №4
+#Module №4
 class Enrollment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -308,15 +308,16 @@ class Course(db.Model):
     code = db.Column(db.String(50), nullable=False, unique=True)  
     teacher_id = db.Column(db.Integer, db.ForeignKey('teacher.id'), nullable=False) 
     students = db.relationship('User', secondary='enrollment')
+    schedule = db.Column(db.String(250), nullable=True)  # Module №5
 
-@app.route('/admin_page', methods=['GET', 'POST'])
+@app.route('/admin_page', methods=['GET', 'POST']) 
 @login_required
 def manage_courses():
     if request.method == 'POST':
         name = request.form['name']
         code = request.form['code']
         teacher_id = request.form['teacher_id']
-
+        student_ids = request.form.getlist('students')
         existing_course = Course.query.filter_by(code=code).first()
         if existing_course:
             flash("Course with this code already exists.", "warning")
@@ -326,11 +327,16 @@ def manage_courses():
             db.session.commit()
             flash('Course added successfully!', 'success')
 
+        for student_id in student_ids:
+            enrollment = Enrollment(user_id=student_id, course_id=new_course.id)
+        db.session.add(enrollment)
+
         return redirect(url_for('manage_courses'))
 
     teachers = Teacher.query.all()
     courses = Course.query.all()
-    return render_template('manage_courses.html', courses=courses, teachers=teachers)
+    students = User.query.filter_by(account_type='user').all()
+    return render_template('manage_courses.html', courses=courses, teachers=teachers, students=students)
 
 @app.route('/admin_page/<int:course_id>', methods=['POST'])
 @login_required
@@ -383,13 +389,25 @@ def teacher_courses():
     students = User.query.filter_by(account_type='user').all()
     return render_template('teacher_courses.html', courses=courses, students=students)
 
-
-
 @app.route('/user_page')
 @login_required
 def user_courses():
     courses = current_user.courses
     return render_template('user_courses.html', courses=courses)
+
+#Module №5
+
+@app.route('/admin/<int:course_id>', methods=['GET', 'POST'])
+@login_required
+def edit_course_schedule(course_id):
+    course = Course.query.get_or_404(course_id)
+    
+    if request.method == 'POST':
+        course.schedule = request.form['schedule']
+        db.session.commit()
+        flash('Course schedule updated successfully!', 'success')
+        return redirect(url_for('manage_courses'))
+    return render_template('edit_course_schedule.html', course=course)
 
 
 if __name__ == '__main__':
