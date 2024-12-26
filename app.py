@@ -18,7 +18,7 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(150), unique=True, nullable=False)
     password = db.Column(db.String(150), nullable=False)
     account_type = db.Column(db.String(50), nullable=False)
-    courses = db.relationship('Course', secondary='enrollment', backref=db.backref('enrolled_students', lazy=True))
+    enrolled_courses = db.relationship('Course', secondary='enrollment', back_populates='students')
     email = db.Column(db.String(150), nullable=True)
     first_name = db.Column(db.String(100), nullable=True)  
     last_name = db.Column(db.String(100), nullable=True)   
@@ -166,7 +166,7 @@ def admin_page():
 
 #Module №2
 
-@app.route('/add_user', methods=['GET', 'POST'])
+@app.route('/admin_page/add_user', methods=['GET', 'POST'])
 @login_required
 def add_user():
     if request.method == 'POST':
@@ -232,7 +232,7 @@ def delete_user(user_id):
 
 #Module №3
 
-@app.route('/add_teacher', methods=['GET', 'POST'])
+@app.route('/admin_page/add_teacher', methods=['GET', 'POST'])
 @login_required
 def add_teacher():    
     if request.method == 'POST':
@@ -307,7 +307,7 @@ class Course(db.Model):
     name = db.Column(db.String(150), nullable=False)  
     code = db.Column(db.String(50), nullable=False, unique=True)  
     teacher_id = db.Column(db.Integer, db.ForeignKey('teacher.id'), nullable=False) 
-    students = db.relationship('User', secondary='enrollment')
+    students = db.relationship('User', secondary='enrollment', back_populates='enrolled_courses')
     schedule = db.Column(db.String(250), nullable=True)  # Module №5
 
 @app.route('/admin_page', methods=['GET', 'POST']) 
@@ -329,7 +329,8 @@ def manage_courses():
 
         for student_id in student_ids:
             enrollment = Enrollment(user_id=student_id, course_id=new_course.id)
-        db.session.add(enrollment)
+            db.session.add(enrollment)
+        db.session.commit()
 
         return redirect(url_for('manage_courses'))
 
@@ -357,6 +358,7 @@ def edit_course(course_id):
 @login_required
 def delete_course(course_id):
     course = Course.query.get(course_id)
+    Enrollment.query.filter_by(course_id=course.id).delete()
     if course:
         db.session.delete(course)
         db.session.commit()
