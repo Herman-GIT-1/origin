@@ -15,32 +15,5 @@
         <li class="nav-item"><a href="{{ url_for('logout') }}" class="btn btn-outline-dark">Logout</a></li>
     </ul>
 </header>
-
-<div class="container mt-4"></div>
-    <h3>Assign Grades</h3>
-    <form method="POST" action="{{ url_for('teacher_courses') }}">
-        <div class="form-group">
-            <label for="course_id">Select Course</label>
-            <select class="form-control" name="course_id" required>
-                {% for course in courses %}
-                    <option value="{{ course.id }}">{{ course.name }} - {{ course.code }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="form-group">
-            <label for="user_id">Select Student</label>
-            <select class="form-control" name="user_id" required>
-                {% for user in users %}
-                    <option value="{{ user.id }}">{{ user.username }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="form-group">
-            <label for="grade">Grade</label>
-            <input class="form-control" type="text" name="grade" placeholder="Enter grade" required>
-        </div>
-        <button type="submit" class="btn btn-primary">Assign Grade</button>
-    </form>
-</div>
 </body>
 </html>

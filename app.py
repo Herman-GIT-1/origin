@@ -23,7 +23,7 @@ class User(UserMixin, db.Model):
     first_name = db.Column(db.String(100), nullable=True)  
     last_name = db.Column(db.String(100), nullable=True)   
     major = db.Column(db.String(150), nullable=True)       
-    semester = db.Column(db.Integer, nullable=True)       
+    semester = db.Column(db.Integer, nullable=True)     
 
 class Teacher(UserMixin, db.Model):  
     id = db.Column(db.Integer, primary_key=True)
@@ -35,6 +35,8 @@ class Teacher(UserMixin, db.Model):
     subjects = db.Column(db.String(200), nullable=False)
     office = db.Column(db.String(100), nullable=False)
     consultation_hours = db.Column(db.String(100), nullable=False)
+    courses = db.relationship('Course', backref='teacher')
+
 
 class Admin(UserMixin, db.Model):  
     id = db.Column(db.Integer, primary_key=True)
@@ -209,6 +211,7 @@ def edit_user(user_id):
     if request.method == 'POST':
         user.username = request.form['username']
         user.email = request.form.get('email')
+        user.enrolled_courses = request.form.get('enrolled_courses')
         user.first_name = request.form.get('first_name')
         user.last_name = request.form.get('last_name')
         user.major = request.form.get('major')  
@@ -369,7 +372,7 @@ def delete_course(course_id):
 
 
 
-@app.route('/teacher_page', methods=['GET', 'POST'])
+@app.route('/teacher_page/teacher_courses', methods=['GET', 'POST'])
 @login_required
 def teacher_courses():
     if request.method == 'POST':
@@ -387,14 +390,19 @@ def teacher_courses():
         db.session.commit()
         return redirect(url_for('teacher_courses'))
     
+    if current_user.teacher:
+        courses = Course.query.filter_by(teacher_id=current_user.teacher.id).all()
+    else:
+        courses = []
+    
     courses = Course.query.filter_by(teacher_id=current_user.teacher.id).all()
     students = User.query.filter_by(account_type='user').all()
     return render_template('teacher_courses.html', courses=courses, students=students)
 
-@app.route('/user_page')
+@app.route('/user_page/user_courses')
 @login_required
 def user_courses():
-    courses = current_user.courses
+    courses = current_user.enrolled_courses
     return render_template('user_courses.html', courses=courses)
 
 #Module №5

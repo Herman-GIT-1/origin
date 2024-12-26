@@ -15,18 +15,5 @@
         <li class="nav-item"><a href="{{ url_for('logout') }}" class="nav-link">Logout</a></li>
     </ul>
 </header>
-
-<div class="container mt-4">
-    <h3>Enrolled Courses</h3>
-    {% if courses %}
-        <ul class="list-group">
-            {% for course in courses %}
-                <li class="list-group-item">{{ course.name }} - {{ course.code }}</li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p>You are not enrolled in any courses. Contact your teacher for enrollment.</p>
-    {% endif %}
-</div>
 </body>
 </html>

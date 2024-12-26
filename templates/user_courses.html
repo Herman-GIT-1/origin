@@ -12,7 +12,7 @@
         <thead>
         <tr>
             <th>Course Name</th>
-            <th>Course Code</th>
+            <th>Course Schedule</th>
             <th>Grade</th>
         </tr>
         </thead>
@@ -20,7 +20,7 @@
         {% for course in courses %}
         <tr>
             <td>{{ course.name }}</td>
-            <td>{{ course.code }}</td>
+            <td>{{ course.schedule }}</td>
             <td>{{ course.grade or 'Not graded yet' }}</td>
         </tr>
         {% endfor %}
