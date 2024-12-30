@@ -33,15 +33,17 @@
             <label for="course_id">Course</label>
             <select name="course_id" class="form-control">
                 {% for course in courses %}
-                <option value="{{ course.id }}">{{ course.name }}</option>
+                    <option value="{{ course.id }}">{{ course.name }}</option>
                 {% endfor %}
             </select>
         </div>
         <div class="form-group">
             <label for="user_id">Student</label>
             <select name="user_id" class="form-control">
-                {% for student in students %}
-                    <option value="{{ user.id }}">{{ student.username }}</option>
+                {% for course in courses %}
+                    {% for user in students %}
+                        <option value="{{ user.id }}">{{ user.first_name }} {{ user.last_name }}</option>
+                    {% endfor %}
                 {% endfor %}
             </select>
         </div>

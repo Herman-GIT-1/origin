@@ -13,38 +13,31 @@ login_manager.login_view = 'login'
 
 
 
-class User(UserMixin, db.Model):
+class BaseUser(UserMixin, db.Model):
+    __abstract__ = True
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(150), unique=True, nullable=False)
     password = db.Column(db.String(150), nullable=False)
-    account_type = db.Column(db.String(50), nullable=False)
-    enrolled_courses = db.relationship('Course', secondary='enrollment', back_populates='students')
-    email = db.Column(db.String(150), nullable=True)
-    first_name = db.Column(db.String(100), nullable=True)  
-    last_name = db.Column(db.String(100), nullable=True)   
-    major = db.Column(db.String(150), nullable=True)       
-    semester = db.Column(db.Integer, nullable=True)     
-
-class Teacher(UserMixin, db.Model):  
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(150), unique=True, nullable=False)
-    password = db.Column(db.String(150), nullable=False)
-    account_type = db.Column(db.String(50), nullable=False)
     first_name = db.Column(db.String(100), nullable=True)
     last_name = db.Column(db.String(100), nullable=True)
+    account_type = db.Column(db.String(50), nullable=False)
+    email = db.Column(db.String(150), nullable=True, unique=True)
+
+class User(BaseUser):
+    __tablename__ = 'user'
+    major = db.Column(db.String(150), nullable=True)
+    semester = db.Column(db.Integer, nullable=True)
+    enrolled_courses = db.relationship('Course', secondary='enrollment', back_populates='students')
+
+class Teacher(BaseUser):
+    __tablename__ = 'teacher'
     subjects = db.Column(db.String(200), nullable=False)
     office = db.Column(db.String(100), nullable=False)
     consultation_hours = db.Column(db.String(100), nullable=False)
     courses = db.relationship('Course', backref='teacher')
 
-
-class Admin(UserMixin, db.Model):  
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(150), unique=True, nullable=False)
-    password = db.Column(db.String(150), nullable=False)
-    first_name = db.Column(db.String(100), nullable=True)
-    last_name = db.Column(db.String(100), nullable=True)
-    account_type = db.Column(db.String(50), nullable=False)
+class Admin(BaseUser):
+    __tablename__ = 'admin'
 
 
 @login_manager.user_loader
@@ -76,6 +69,7 @@ def register():
         account_type = request.form['account_type']
         first_name = request.form.get('first_name')
         last_name = request.form.get('last_name')
+        email = request.form.get('email')
 
         if User.query.filter_by(username=username).first() or Teacher.query.filter_by(username=username).first():
             flash('Username already exists.', 'danger')
@@ -88,6 +82,7 @@ def register():
                 account_type='user',
                 first_name=first_name,
                 last_name=last_name,
+                email=email,
             )
             db.session.add(new_user)
             db.session.commit()
@@ -99,6 +94,9 @@ def register():
                 username=username,
                 password=password,
                 account_type='teacher',
+                first_name=first_name,
+                last_name=last_name,
+                email=email,
                 subjects="",
                 office="",
                 consultation_hours="",
@@ -211,7 +209,6 @@ def edit_user(user_id):
     if request.method == 'POST':
         user.username = request.form['username']
         user.email = request.form.get('email')
-        user.enrolled_courses = request.form.get('enrolled_courses')
         user.first_name = request.form.get('first_name')
         user.last_name = request.form.get('last_name')
         user.major = request.form.get('major')  
@@ -243,18 +240,18 @@ def add_teacher():
         password = request.form['password']
         first_name = request.form.get('first_name')
         last_name = request.form.get('last_name')
-        account_type = request.form['account_type']
         subjects = request.form['subjects']
-        office = request.form.get['office']
-        consultation_hours = request.form.get['consultation_hours']
+        account_type = request.form['account_type']
+        office = request.form.get('office')
+        consultation_hours = request.form.get('consultation_hours')
 
         new_teacher = Teacher(
             username=username,
             password=password,
             first_name=first_name,
             last_name=last_name,
-            account_type=account_type,
             subjects=subjects,
+            account_type=account_type,
             office=office,
             consultation_hours=consultation_hours,
         )
@@ -303,15 +300,26 @@ class Enrollment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     course_id = db.Column(db.Integer, db.ForeignKey('course.id'), nullable=False)
-    grade = db.Column(db.String(50), nullable=True) 
+    grade = db.Column(db.String(50), nullable=True)
+
+    __table_args__ = (
+        db.UniqueConstraint('user_id', 'course_id', name='unique_user_course'),
+    )
 
 class Course(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(150), nullable=False)  
-    code = db.Column(db.String(50), nullable=False, unique=True)  
-    teacher_id = db.Column(db.Integer, db.ForeignKey('teacher.id'), nullable=False) 
+    name = db.Column(db.String(150), nullable=False)
+    code = db.Column(db.String(50), nullable=False, unique=True, index=True)
+    teacher_id = db.Column(db.Integer, db.ForeignKey('teacher.id'), nullable=False)
     students = db.relationship('User', secondary='enrollment', back_populates='enrolled_courses')
-    schedule = db.Column(db.String(250), nullable=True)  # Module №5
+    course_schedule = db.relationship('Schedule', backref='course', cascade="all, delete-orphan") 
+
+class Schedule(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    course_id = db.Column(db.Integer, db.ForeignKey('course.id'), nullable=False)
+    day_of_week = db.Column(db.String(20), nullable=False)
+    start_time = db.Column(db.Time, nullable=False)
+    end_time = db.Column(db.Time, nullable=False)
 
 @app.route('/admin_page', methods=['GET', 'POST']) 
 @login_required
@@ -350,6 +358,7 @@ def edit_course(course_id):
         course.name = request.form['name']
         course.code = request.form['code']
         course.teacher_id = request.form['teacher_id']
+        course.students = request.form['students']
         db.session.commit()
         flash('Course updated successfully!', 'success')
     else:
@@ -390,12 +399,12 @@ def teacher_courses():
         db.session.commit()
         return redirect(url_for('teacher_courses'))
     
-    if current_user.teacher:
-        courses = Course.query.filter_by(teacher_id=current_user.teacher.id).all()
+    if current_user.account_type == 'teacher':
+        courses = Course.query.filter_by(teacher_id=current_user.id).all()
     else:
         courses = []
     
-    courses = Course.query.filter_by(teacher_id=current_user.teacher.id).all()
+    courses = Course.query.filter_by(teacher_id=current_user.id).all()
     students = User.query.filter_by(account_type='user').all()
     return render_template('teacher_courses.html', courses=courses, students=students)
 
@@ -413,7 +422,7 @@ def edit_course_schedule(course_id):
     course = Course.query.get_or_404(course_id)
     
     if request.method == 'POST':
-        course.schedule = request.form['schedule']
+        course.course_schedule = request.form['course_schedule']
         db.session.commit()
         flash('Course schedule updated successfully!', 'success')
         return redirect(url_for('manage_courses'))
