@@ -1,16 +1,21 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
-from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, logout_user,login_required, current_user
+from paypal import create_payout, get_payout_status
+from datetime import datetime
+from config import Config
+from extensions import db, mail, login_manager
+from flask_migrate import Migrate
 
 app = Flask(__name__)
+app.config.from_object(Config)
 app.secret_key = 'GGWPEZKATKA'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-db = SQLAlchemy(app)
-login_manager = LoginManager(app)
-login_manager.login_view = 'login'
-
+db.init_app(app)  
+mail.init_app(app)
+login_manager.init_app(app)
+migrate = Migrate(app, db)
 
 
 class BaseUser(UserMixin, db.Model):
@@ -427,6 +432,48 @@ def edit_course_schedule(course_id):
         flash('Course schedule updated successfully!', 'success')
         return redirect(url_for('manage_courses'))
     return render_template('edit_course_schedule.html', course=course)
+
+#Module №7
+class PayPal:
+    id = db.Column(db.Integer, primary_key=True)
+    payer_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    payout_status = db.column(db.String(150))
+
+class PayoutHistory(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    batch_id = db.Column(db.String(255), unique=True, nullable=False)
+    amount = db.Column(db.String(50), nullable=False)
+    currency = db.Column(db.String(10), nullable=False)
+    recipient_email = db.Column(db.String(255), nullable=False)
+    sent_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f"<Payout {self.batch_id} - {self.amount} {self.currency}>"
+
+@app.route('/payout', methods=['GET', 'POST'])
+def payout():
+    if request.method == 'POST':
+        email = request.form['email']
+        amount = float(request.form['amount'])
+
+        try:
+            payout_response = create_payout(email, amount)
+            batch_id = payout_response.get("batch_header", {}).get("payout_batch_id")
+            flash(f"Payment success! Batch ID: {batch_id}", "success")
+            return redirect(url_for('payout_status', batch_id=batch_id))
+        except Exception as e:
+            flash(str(e), "danger")
+    return render_template('payout.html')
+
+
+@app.route('/payout_status/<int:user_id>/<batch_id>')
+def payout_status(batch_id):
+    try:
+        status_response = get_payout_status(batch_id)
+        return render_template('payout_status.html', status=status_response)
+    except Exception as e:
+        flash(str(e), "danger")
+        return redirect(url_for('payout.html'))
 
 
 if __name__ == '__main__':
