@@ -8,24 +8,40 @@
 <body>
 <div class="container mt-5">
     <h1>My Courses</h1>
-    <table class="table table-bordered">
+    {% if courses %}
+    <table class="table table-bordered table-striped">
         <thead>
-        <tr>
-            <th>Course Name</th>
-            <th>Course Schedule</th>
-            <th>Grade</th>
-        </tr>
+            <tr>
+                <th>Course Name</th>
+                <th>Course Schedule</th>
+                <th>Grade</th>
+            </tr>
         </thead>
         <tbody>
         {% for course in courses %}
-        <tr>
-            <td>{{ course.name }}</td>
-            <td>{{ course.schedule }}</td>
-            <td>{{ course.grade or 'Not graded yet' }}</td>
-        </tr>
+            <tr>
+                <td>{{ course.name }}</td>
+                <td class="course-schedule">
+                    {% if course.course_schedule %}
+                        {% for schedule in course.course_schedule %}
+                            <div>
+                                <span class="schedule-day">{{ schedule.day_of_week }}:</span>
+                                <span class="schedule-time">{{ schedule.start_time }} - {{ schedule.end_time }}</span>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <span class="text-muted">No schedule available</span>
+                    {% endif %}
+                </td>
+                <td>{{ course.grade or 'Not graded yet' }}</td>
+            </tr>
         {% endfor %}
         </tbody>
     </table>
+    {% else %}
+    <div class="no-courses">You are not enrolled in any courses yet.</div>
+    {% endif %}
 </div>
+<a href="{{ url_for('user_page') }}" class="btn btn-success mb-3">Return</a>
 </body>
 </html>

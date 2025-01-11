@@ -22,15 +22,14 @@ def save_payout_to_db(payout_batch_id, amount, currency, recipient_email, sent_d
 
 load_dotenv()
 
-PAYPAL_CLIENT_ID = os.getenv("PAYPAL_CLIENT_ID")
-PAYPAL_SECRET = os.getenv("PAYPAL_SECRET")
+PAYPAL_CLIENT_ID = "AcQ6FbG5mrK_58EgrufausOtcBunRViaSvDeQCGBdJFQ3lUWMYik0hZBZsgTgPLSFNPgbS2-lm7b3HVX"
+PAYPAL_SECRET = "ELScVHSJlO6UmZ3L5NaQIWS37kIaZPNKw6i3JLO5CGHv8nze9qxHzA-V7c5Sngr5cOha8Ts3psQxCd5Q"
 PAYPAL_MODE = os.getenv("PAYPAL_MODE", "sandbox")
 
 PAYPAL_API_BASE = "https://api-m.sandbox.paypal.com" if PAYPAL_MODE == "sandbox" else "https://api-m.paypal.com"
 
 
 def get_access_token():
-    """Получаем OAuth 2.0 токен от PayPal"""
     url = f"{PAYPAL_API_BASE}/v1/oauth2/token"
     headers = {"Accept": "application/json", "Accept-Language": "en_US"}
     data = {"grant_type": "client_credentials"}
@@ -44,7 +43,6 @@ def get_access_token():
 
 
 def create_payout(receiver_email, amount, currency="USD"):
-    """Создаёт выплату через PayPal Payouts API"""
     access_token = get_access_token()
     url = f"{PAYPAL_API_BASE}/v1/payments/payouts"
 
@@ -81,7 +79,6 @@ def create_payout(receiver_email, amount, currency="USD"):
 
 
 def get_payout_status(payout_batch_id):
-    """Проверяет статус выплаты и сохраняет её в базу"""
     access_token = get_access_token()
     url = f"{PAYPAL_API_BASE}/v1/payments/payouts/{payout_batch_id}"
     
@@ -97,7 +94,6 @@ def get_payout_status(payout_batch_id):
         currency = payout_info["items"][0]["payout_item"]["amount"]["currency"]
         sent_date = payout_info["batch_header"]["time_created"]
         recipient_email = payout_info["items"][0]["payout_item"]["receiver"]
-
         sent_date = datetime.strptime(sent_date, "%Y-%m-%dT%H:%M:%SZ")
 
         existing_payout = PayoutHistory.query.filter_by(batch_id=payout_batch_id).first()

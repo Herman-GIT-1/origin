@@ -5,6 +5,7 @@ from datetime import datetime
 from config import Config
 from extensions import db, mail, login_manager
 from flask_migrate import Migrate
+import enum
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -317,14 +318,26 @@ class Course(db.Model):
     code = db.Column(db.String(50), nullable=False, unique=True, index=True)
     teacher_id = db.Column(db.Integer, db.ForeignKey('teacher.id'), nullable=False)
     students = db.relationship('User', secondary='enrollment', back_populates='enrolled_courses')
-    course_schedule = db.relationship('Schedule', backref='course', cascade="all, delete-orphan") 
+    course_schedule = db.relationship('Schedule', back_populates='course', cascade="all, delete-orphan") 
+
+class DaysOfWeek(enum.Enum):
+    MONDAY = "Monday"
+    TUESDAY = "Tuesday"
+    WEDNESDAY = "Wednesday"
+    THURSDAY = "Thursday"
+    FRIDAY = "Friday"
+    SATURDAY = "Saturday"
+    SUNDAY = "Sunday"
+
 
 class Schedule(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    course_id = db.Column(db.Integer, db.ForeignKey('course.id'), nullable=False)
-    day_of_week = db.Column(db.String(20), nullable=False)
+    course_id = db.Column(db.Integer, db.ForeignKey('course.id', name="fk_schedule_course"), nullable=False)
+    day_of_week = db.Column(db.Enum(DaysOfWeek), nullable=False)
     start_time = db.Column(db.Time, nullable=False)
     end_time = db.Column(db.Time, nullable=False)
+    course = db.relationship('Course', back_populates='course_schedule')
+
 
 @app.route('/admin_page', methods=['GET', 'POST']) 
 @login_required
@@ -421,17 +434,44 @@ def user_courses():
 
 #Module №5
 
-@app.route('/admin/<int:course_id>', methods=['GET', 'POST'])
+@app.route('/admin/course/<int:course_id>/schedule', methods=['GET', 'POST'])
 @login_required
 def edit_course_schedule(course_id):
     course = Course.query.get_or_404(course_id)
-    
+    schedule = Schedule.query.filter_by(course_id=course_id).first()
+
     if request.method == 'POST':
-        course.course_schedule = request.form['course_schedule']
-        db.session.commit()
-        flash('Course schedule updated successfully!', 'success')
-        return redirect(url_for('manage_courses'))
+        try:
+            new_day = request.form['day_of_week']
+            start_time = datetime.strptime(request.form['start_time'], "%H:%M").time()
+            end_time = datetime.strptime(request.form['end_time'], "%H:%M").time()
+
+            if start_time >= end_time:
+                flash('End time must be later than start time.', 'danger')
+                return redirect(url_for('edit_course_schedule', course_id=course_id))
+
+            existing_schedule = Schedule.query.filter_by(course_id=course_id, day_of_week=new_day).first()
+            if existing_schedule and existing_schedule.id != schedule.id:
+                flash('A schedule for this day already exists.', 'warning')
+                return redirect(url_for('edit_course_schedule', course_id=course_id))
+
+            if not schedule:
+                schedule = Schedule(course_id=course_id, day_of_week=new_day, start_time=start_time, end_time=end_time)
+                db.session.add(schedule)
+            else:
+                schedule.day_of_week = new_day
+                schedule.start_time = start_time
+                schedule.end_time = end_time
+
+            db.session.commit()
+            flash('Course schedule updated successfully!', 'success')
+            return redirect(url_for('manage_courses'))
+        
+        except ValueError:
+            flash('Invalid time format. Please enter a valid time.', 'danger')
+
     return render_template('edit_course_schedule.html', course=course)
+
 
 #Module №7
 class PayPal:
