@@ -5,7 +5,7 @@ from datetime import datetime
 from config import Config
 from extensions import db, mail, login_manager
 from flask_migrate import Migrate
-import enum
+from models import BaseUser, User, Teacher, Admin, Enrollment, Course, DaysOfWeek ,Schedule
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -17,34 +17,6 @@ db.init_app(app)
 mail.init_app(app)
 login_manager.init_app(app)
 migrate = Migrate(app, db)
-
-
-class BaseUser(UserMixin, db.Model):
-    __abstract__ = True
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(150), unique=True, nullable=False)
-    password = db.Column(db.String(150), nullable=False)
-    first_name = db.Column(db.String(100), nullable=True)
-    last_name = db.Column(db.String(100), nullable=True)
-    account_type = db.Column(db.String(50), nullable=False)
-    email = db.Column(db.String(150), nullable=True, unique=True)
-
-class User(BaseUser):
-    __tablename__ = 'user'
-    major = db.Column(db.String(150), nullable=True)
-    semester = db.Column(db.Integer, nullable=True)
-    enrolled_courses = db.relationship('Course', secondary='enrollment', back_populates='students')
-
-class Teacher(BaseUser):
-    __tablename__ = 'teacher'
-    subjects = db.Column(db.String(200), nullable=False)
-    office = db.Column(db.String(100), nullable=False)
-    consultation_hours = db.Column(db.String(100), nullable=False)
-    courses = db.relationship('Course', backref='teacher')
-
-class Admin(BaseUser):
-    __tablename__ = 'admin'
-
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -302,42 +274,6 @@ def delete_teacher(teacher_id):
         flash(f'An error occurred: {e}', 'danger')
     return redirect(url_for('admin_page'))
 #Module №4
-class Enrollment(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    course_id = db.Column(db.Integer, db.ForeignKey('course.id'), nullable=False)
-    grade = db.Column(db.String(50), nullable=True)
-
-    __table_args__ = (
-        db.UniqueConstraint('user_id', 'course_id', name='unique_user_course'),
-    )
-
-class Course(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(150), nullable=False)
-    code = db.Column(db.String(50), nullable=False, unique=True, index=True)
-    teacher_id = db.Column(db.Integer, db.ForeignKey('teacher.id'), nullable=False)
-    students = db.relationship('User', secondary='enrollment', back_populates='enrolled_courses')
-    course_schedule = db.relationship('Schedule', back_populates='course', cascade="all, delete-orphan") 
-
-class DaysOfWeek(enum.Enum):
-    MONDAY = "Monday"
-    TUESDAY = "Tuesday"
-    WEDNESDAY = "Wednesday"
-    THURSDAY = "Thursday"
-    FRIDAY = "Friday"
-    SATURDAY = "Saturday"
-    SUNDAY = "Sunday"
-
-
-class Schedule(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    course_id = db.Column(db.Integer, db.ForeignKey('course.id', name="fk_schedule_course"), nullable=False)
-    day_of_week = db.Column(db.Enum(DaysOfWeek), nullable=False)
-    start_time = db.Column(db.Time, nullable=False)
-    end_time = db.Column(db.Time, nullable=False)
-    course = db.relationship('Course', back_populates='course_schedule')
-
 
 @app.route('/admin_page', methods=['GET', 'POST']) 
 @login_required
@@ -368,20 +304,32 @@ def manage_courses():
     students = User.query.filter_by(account_type='user').all()
     return render_template('manage_courses.html', courses=courses, teachers=teachers, students=students)
 
-@app.route('/admin_page/<int:course_id>', methods=['POST'])
+@app.route('/admin_page/<int:course_id>', methods=['GET', 'POST'])
 @login_required
 def edit_course(course_id):
     course = Course.query.get(course_id)
-    if course:
-        course.name = request.form['name']
-        course.code = request.form['code']
-        course.teacher_id = request.form['teacher_id']
-        course.students = request.form['students']
+    
+    if request.method == 'POST':
+        name = request.form.get('name')
+        code = request.form.get('code')
+        teacher_id = request.form.get('teacher_id')
+        students = request.form.getlist('students')
+
+        if not name or not code or not teacher_id:
+            flash('All fields are required!', 'error')
+            return redirect(url_for('edit_course', course_id=course.id))
+
+        course.name = name
+        course.code = code
+        course.teacher_id = teacher_id
+        course.students = students
         db.session.commit()
         flash('Course updated successfully!', 'success')
-    else:
-        flash('Course not found!', 'error')
-    return redirect(url_for('manage_courses'))
+        return redirect(url_for('manage_courses'))
+    teacher_id = Teacher.query.all()
+    course = Course.query.all()
+    students = User.query.filter_by(account_type='user').all()
+    return render_template('edit_course.html', course=course, teacher_id=teacher_id, students=students)
 
 
 @app.route('/admin_page/<int:course_id>', methods=['POST'])
@@ -474,22 +422,6 @@ def edit_course_schedule(course_id):
 
 
 #Module №7
-class PayPal:
-    id = db.Column(db.Integer, primary_key=True)
-    payer_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    payout_status = db.column(db.String(150))
-
-class PayoutHistory(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    batch_id = db.Column(db.String(255), unique=True, nullable=False)
-    amount = db.Column(db.String(50), nullable=False)
-    currency = db.Column(db.String(10), nullable=False)
-    recipient_email = db.Column(db.String(255), nullable=False)
-    sent_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-
-    def __repr__(self):
-        return f"<Payout {self.batch_id} - {self.amount} {self.currency}>"
-
 @app.route('/payout', methods=['GET', 'POST'])
 def payout():
     if request.method == 'POST':

@@ -1,26 +1,10 @@
 import os
 import requests
-from dotenv import load_dotenv
 from datetime import datetime
 from flask_mail import Message
 from extensions import db, mail
+from models import PayoutHistory, PayPal
 
-def save_payout_to_db(payout_batch_id, amount, currency, recipient_email, sent_date):
-    from app import PayoutHistory
-    existing_payout = PayoutHistory.query.filter_by(batch_id=payout_batch_id).first()
-    
-    if not existing_payout:
-        new_payout = PayoutHistory(
-            batch_id=payout_batch_id,
-            amount=amount,
-            currency=currency,
-            recipient_email=recipient_email,
-            sent_date=sent_date
-        )
-        db.session.add(new_payout)
-        db.session.commit()
-
-load_dotenv()
 
 PAYPAL_CLIENT_ID = "AcQ6FbG5mrK_58EgrufausOtcBunRViaSvDeQCGBdJFQ3lUWMYik0hZBZsgTgPLSFNPgbS2-lm7b3HVX"
 PAYPAL_SECRET = "ELScVHSJlO6UmZ3L5NaQIWS37kIaZPNKw6i3JLO5CGHv8nze9qxHzA-V7c5Sngr5cOha8Ts3psQxCd5Q"
@@ -39,12 +23,14 @@ def get_access_token():
     if response.status_code == 200:
         return response.json()["access_token"]
     else:
-        raise Exception(f"{response.text}")
-
+        print(f"Ошибка получения токена: {response.status_code} - {response.text}")
+        raise Exception(f"Ошибка: {response.text}")
 
 def create_payout(receiver_email, amount, currency="USD"):
     access_token = get_access_token()
     url = f"{PAYPAL_API_BASE}/v1/payments/payouts"
+
+    sender_batch_id = f"batch_{datetime.utcnow().strftime('%Y%m%d%H%M%S')}_{os.urandom(4).hex()}"
 
     headers = {
         "Content-Type": "application/json",
@@ -53,7 +39,7 @@ def create_payout(receiver_email, amount, currency="USD"):
 
     payload = {
         "sender_batch_header": {
-            "sender_batch_id": "batch_" + os.urandom(8).hex(),
+            "sender_batch_id": sender_batch_id,
             "email_subject": "You have received a payment!"
         },
         "items": [
@@ -75,21 +61,22 @@ def create_payout(receiver_email, amount, currency="USD"):
     if response.status_code in [200, 201]:
         return response.json()
     else:
-        raise Exception(f"{response.text}")
-
+        print(f"Error send payment: {response.status_code} - {response.text}")
+        raise Exception(f"Error PayPal: {response.text}")
 
 def get_payout_status(payout_batch_id):
     access_token = get_access_token()
     url = f"{PAYPAL_API_BASE}/v1/payments/payouts/{payout_batch_id}"
     
-    headers = {
-        "Authorization": f"Bearer {access_token}"
-    }
-    
+    headers = {"Authorization": f"Bearer {access_token}"}
     response = requests.get(url, headers=headers)
     
     if response.status_code == 200:
         payout_info = response.json()
+
+        if "items" not in payout_info or not payout_info["items"]:
+            raise Exception("PayPal API didn't send back info")
+
         amount = payout_info["items"][0]["payout_item"]["amount"]["value"]
         currency = payout_info["items"][0]["payout_item"]["amount"]["currency"]
         sent_date = payout_info["batch_header"]["time_created"]
@@ -116,21 +103,29 @@ def get_payout_status(payout_batch_id):
             "full_response": payout_info
         }
     else:
-        raise Exception(f"Ошибка при проверке статуса: {response.text}")
+        print(f"Status check error: {response.status_code} - {response.text}")
+        raise Exception(f"Status check error: {response.text}")
 
 def send_payout_email(to_email, amount, currency, sent_date):
+    if not mail or not mail.server:
+        print("Error mail server is not made")
+        return
+
     msg = Message(
         "Payment has been successfully sent",
-        sender="your_email@example.com",
+        sender="germanq1610@gmail.com",
         recipients=[to_email]
     )
     msg.body = f"""
     Hello,
 
-    Payment was sent to your account:{amount} {currency}.
+    Payment was sent to your account: {amount} {currency}.
     
     Transaction date: {sent_date.strftime('%d %B %Y, %H:%M')}
 
     Thank you!
     """
-    mail.send(msg)
+    try:
+        mail.send(msg)
+    except Exception as e:
+        print(f"Error in email: {e}")
