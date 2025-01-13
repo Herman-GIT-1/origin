@@ -23,8 +23,8 @@ def get_access_token():
     if response.status_code == 200:
         return response.json()["access_token"]
     else:
-        print(f"Ошибка получения токена: {response.status_code} - {response.text}")
-        raise Exception(f"Ошибка: {response.text}")
+        print(f"Error getting token: {response.status_code} - {response.text}")
+        raise Exception(f"Token Error: {response.text}")
 
 def create_payout(receiver_email, amount, currency="USD"):
     access_token = get_access_token()

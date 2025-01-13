@@ -6,6 +6,7 @@ from config import Config
 from extensions import db, mail, login_manager
 from flask_migrate import Migrate
 from models import BaseUser, User, Teacher, Admin, Enrollment, Course, DaysOfWeek ,Schedule
+import re
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -425,27 +426,43 @@ def edit_course_schedule(course_id):
 @app.route('/payout', methods=['GET', 'POST'])
 def payout():
     if request.method == 'POST':
-        email = request.form['email']
-        amount = float(request.form['amount'])
+        email = request.form['email'].strip()
+        amount = request.form['amount'].strip()
+
+        if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
+            flash("Invalid email address!", "danger")
+            return redirect(url_for('payout'))
+
+        try:
+            amount = float(amount)
+            if amount <= 0:
+                raise ValueError
+        except ValueError:
+            flash("Invalid amount! Please enter a positive number.", "danger")
+            return redirect(url_for('payout'))
 
         try:
             payout_response = create_payout(email, amount)
             batch_id = payout_response.get("batch_header", {}).get("payout_batch_id")
-            flash(f"Payment success! Batch ID: {batch_id}", "success")
+
+            if not batch_id:
+                raise Exception("Failed to get batch ID from PayPal response.")
+
+            flash(f"Payment successful! Batch ID: {batch_id}", "success")
             return redirect(url_for('payout_status', batch_id=batch_id))
         except Exception as e:
-            flash(str(e), "danger")
+            flash(f"Payment error: {str(e)}", "danger")
+
     return render_template('payout.html')
 
-
-@app.route('/payout_status/<int:user_id>/<batch_id>')
+@app.route('/payout_status/<batch_id>')
 def payout_status(batch_id):
     try:
         status_response = get_payout_status(batch_id)
         return render_template('payout_status.html', status=status_response)
     except Exception as e:
-        flash(str(e), "danger")
-        return redirect(url_for('payout.html'))
+        flash(f"Error fetching payout status: {str(e)}", "danger")
+        return redirect(url_for('payout'))
 
 
 if __name__ == '__main__':
