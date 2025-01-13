@@ -1,36 +1,87 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Course</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&family=Ubuntu:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f4f7fc;
+        }
+
+        .container {
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            max-width: 600px;
+            margin-top: 50px;
+        }
+
+        h1 {
+            font-family: 'Ubuntu', sans-serif;
+            color: #4e73df;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .btn-primary {
+            background-color: #4e73df;
+            border-color: #4e73df;
+            padding: 10px 20px;
+            border-radius: 4px;
+            width: 100%;
+        }
+
+        .btn-primary:hover {
+            background-color: #3e5bbf;
+        }
+
+        .form-control:focus {
+            border-color: #4e73df;
+            box-shadow: 0 0 5px rgba(78, 115, 223, 0.5);
+        }
+
+        .form-group label {
+            font-weight: bold;
+            color: #495057;
+        }
+    </style>
 </head>
+
 <body>
-<div class="container mt-5">
-    <h1>Edit Course</h1>
-    <form method="POST"  action="{{ url_for('edit_course', course_id=course.id) }}">
-        <div class="form-group">
-            <label for="name">Name</label>
-            <input type="text" name="name" class="form-control" value="{{ course.name }}" required>
-        </div>
-        <div class="form-group">
-            <label for="teacher_id">Teacher ID</label>
-            <input type="text" name="teacher_id" class="form-control" value="{{ course.teacher_id }}">
-        </div>
-        <div class="form-group">
-            <label for="students">Students</label>
-            <select type="text" name="students" class="form-control" value="{{ course.students }}">
-            {% for user in students %}
-                <option value="{{ user.id }}">{{ user.first_name }} {{ user.last_name }}</option>
-            {% endfor %}
-        </div>
-        <div class="form-group">
-            <label for="subjects">Subjects</label>
-            <input type="text" name="subjects" class="form-control" value="{{ teacher.subjects }}" required>
-        </div>
-        <button type="submit" class="btn btn-primary">Update Course</button>
-    </form>
-</div>
+    <div class="container">
+        <h1>Edit Course</h1>
+        <form method="POST" action="{{ url_for('edit_course', course_id=course.id) }}">
+            <div class="form-group">
+                <label for="name">Course Name</label>
+                <input type="text" name="name" class="form-control" value="{{ course.name }}" required>
+            </div>
+            <div class="form-group">
+                <label for="teacher_id">Teacher ID</label>
+                <input type="text" name="teacher_id" class="form-control" value="{{ course.teacher_id }}">
+            </div>
+            <div class="form-group">
+                <label for="students">Students</label>
+                <select name="students" class="form-control">
+                    {% for user in students %}
+                        <option value="{{ user.id }}" {% if user.id == course.students %}selected{% endif %}>
+                            {{ user.first_name }} {{ user.last_name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="subjects">Subjects</label>
+                <input type="text" name="subjects" class="form-control" value="{{ course.subjects }}" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Update Course</button>
+        </form>
+    </div>
 </body>
+
 </html>
