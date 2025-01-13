@@ -31,9 +31,9 @@ class Admin(BaseUser):
 
 class Enrollment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    course_id = db.Column(db.Integer, db.ForeignKey('course.id'), nullable=False)
-    grade = db.Column(db.String(50), nullable=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete="CASCADE"), nullable=False)
+    course_id = db.Column(db.Integer, db.ForeignKey('course.id', ondelete="CASCADE"), nullable=False)
+    grade = db.Column(db.Float, nullable=True)
 
     __table_args__ = (
         db.UniqueConstraint('user_id', 'course_id', name='unique_user_course'),
@@ -65,18 +65,18 @@ class Schedule(db.Model):
     end_time = db.Column(db.Time, nullable=False)
     course = db.relationship('Course', back_populates='course_schedule')
 
-class PayPal:
-    id = db.Column(db.Integer, primary_key=True)
-    payer_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    payout_status = db.column(db.String(150))
 
 class PayoutHistory(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     batch_id = db.Column(db.String(255), unique=True, nullable=False)
     amount = db.Column(db.String(50), nullable=False)
     currency = db.Column(db.String(10), nullable=False)
     recipient_email = db.Column(db.String(255), nullable=False)
     sent_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+    
+    user = db.relationship('User', backref='payouts')
 
     def __repr__(self):
         return f"<Payout {self.batch_id} - {self.amount} {self.currency}>"

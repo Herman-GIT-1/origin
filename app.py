@@ -5,7 +5,7 @@ from datetime import datetime
 from config import Config
 from extensions import db, mail, login_manager
 from flask_migrate import Migrate
-from models import BaseUser, User, Teacher, Admin, Enrollment, Course, DaysOfWeek ,Schedule
+from models import BaseUser, User, Teacher, Admin, Enrollment, Course, DaysOfWeek ,Schedule, PayoutHistory
 import re
 
 app = Flask(__name__)
@@ -424,15 +424,17 @@ def edit_course_schedule(course_id):
 
 #Module №7
 @app.route('/payout', methods=['GET', 'POST'])
+@login_required
 def payout():
     if request.method == 'POST':
         email = request.form['email'].strip()
         amount = request.form['amount'].strip()
 
+
         if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
             flash("Invalid email address!", "danger")
             return redirect(url_for('payout'))
-
+        
         try:
             amount = float(amount)
             if amount <= 0:
@@ -448,21 +450,44 @@ def payout():
             if not batch_id:
                 raise Exception("Failed to get batch ID from PayPal response.")
 
+            new_payout = PayoutHistory(
+                user_id=current_user.id,
+                batch_id=batch_id,
+                amount=amount,
+                currency="USD",
+                recipient_email=email
+            )
+            db.session.add(new_payout)
+            db.session.commit()
+
             flash(f"Payment successful! Batch ID: {batch_id}", "success")
-            return redirect(url_for('payout_status', batch_id=batch_id))
+            return redirect(url_for('payout', user_id=current_user.id, batch_id=batch_id))
         except Exception as e:
             flash(f"Payment error: {str(e)}", "danger")
 
     return render_template('payout.html')
 
-@app.route('/payout_status/<batch_id>')
-def payout_status(batch_id):
-    try:
-        status_response = get_payout_status(batch_id)
-        return render_template('payout_status.html', status=status_response)
-    except Exception as e:
-        flash(f"Error fetching payout status: {str(e)}", "danger")
-        return redirect(url_for('payout'))
+@app.route('/payout_status/<int:user_id>/<batch_id>')
+@login_required
+def payout_status(user_id, batch_id):
+    if user_id == current_user.id:
+        try:
+            status_response = get_payout_status(user_id, batch_id)
+            return render_template('payout_status.html', status=status_response)
+        except Exception as e:
+            flash(f"Error fetching payout status: {str(e)}", "danger")
+            return redirect(url_for('payout'))
+
+
+#Module 8
+
+@app.route('/reports')
+def reports():
+    student_count = db.session.query(User).count()
+    average_grades = db.session.query(User.id, User.first_name, db.func.avg(Enrollment.grade)).join(Enrollment).group_by(User.id).all()
+    course_enrollment = db.session.query(Course.name, db.func.count(Enrollment.user_id)).join(Enrollment).group_by(Course.id).all()
+    
+    return render_template('reports.html', student_count=student_count, average_grades=average_grades, course_enrollment=course_enrollment)
 
 
 if __name__ == '__main__':

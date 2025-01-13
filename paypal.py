@@ -3,7 +3,7 @@ import requests
 from datetime import datetime
 from flask_mail import Message
 from extensions import db, mail
-from models import PayoutHistory, PayPal
+from models import PayoutHistory
 
 
 PAYPAL_CLIENT_ID = "AcQ6FbG5mrK_58EgrufausOtcBunRViaSvDeQCGBdJFQ3lUWMYik0hZBZsgTgPLSFNPgbS2-lm7b3HVX"
@@ -64,13 +64,13 @@ def create_payout(receiver_email, amount, currency="USD"):
         print(f"Error send payment: {response.status_code} - {response.text}")
         raise Exception(f"Error PayPal: {response.text}")
 
-def get_payout_status(payout_batch_id):
+def get_payout_status(user_id, batch_id):
     access_token = get_access_token()
-    url = f"{PAYPAL_API_BASE}/v1/payments/payouts/{payout_batch_id}"
-    
+    url = f"{PAYPAL_API_BASE}/v1/payments/payouts/{batch_id}"
+
     headers = {"Authorization": f"Bearer {access_token}"}
     response = requests.get(url, headers=headers)
-    
+
     if response.status_code == 200:
         payout_info = response.json()
 
@@ -82,11 +82,12 @@ def get_payout_status(payout_batch_id):
         sent_date = payout_info["batch_header"]["time_created"]
         recipient_email = payout_info["items"][0]["payout_item"]["receiver"]
         sent_date = datetime.strptime(sent_date, "%Y-%m-%dT%H:%M:%SZ")
-
-        existing_payout = PayoutHistory.query.filter_by(batch_id=payout_batch_id).first()
+        
+        existing_payout = PayoutHistory.query.filter_by(batch_id=batch_id, user_id=user_id).first()
         if not existing_payout:
             new_payout = PayoutHistory(
-                batch_id=payout_batch_id,
+                user_id=user_id,
+                batch_id=batch_id,
                 amount=amount,
                 currency=currency,
                 recipient_email=recipient_email,
@@ -97,13 +98,12 @@ def get_payout_status(payout_batch_id):
             send_payout_email(recipient_email, amount, currency, sent_date)
 
         return {
-            "batch_id": payout_batch_id,
+            "batch_id": batch_id,
             "amount": f"{amount} {currency}",
             "sent_date": sent_date.strftime("%d %B %Y, %H:%M"),
             "full_response": payout_info
         }
     else:
-        print(f"Status check error: {response.status_code} - {response.text}")
         raise Exception(f"Status check error: {response.text}")
 
 def send_payout_email(to_email, amount, currency, sent_date):
