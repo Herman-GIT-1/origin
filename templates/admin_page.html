@@ -5,17 +5,105 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css"
-        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&family=Ubuntu:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f4f7fc;
+        }
+
+        .container {
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            max-width: 1000px;
+            margin-top: 50px;
+        }
+
+        h1 {
+            font-family: 'Ubuntu', sans-serif;
+            color: #4e73df;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h4 {
+            font-family: 'Ubuntu', sans-serif;
+            color: #495057;
+            margin-bottom: 15px;
+        }
+
+        .btn-success,
+        .btn-outline-dark {
+            font-size: 16px;
+            padding: 10px 20px;
+            border-radius: 4px;
+            transition: background-color 0.3s, border-color 0.3s;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .btn-success {
+            background-color: #28a745;
+            border-color: #28a745;
+        }
+
+        .btn-success:hover {
+            background-color: #218838;
+        }
+
+        .btn-outline-dark {
+            border-color: #343a40;
+            color: #343a40;
+            background-color: transparent;
+        }
+
+        .btn-outline-dark:hover {
+            background-color: #343a40;
+            color: #fff;
+        }
+
+        .table {
+            border-radius: 8px;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+
+        .table-bordered {
+            border: 1px solid #ddd;
+        }
+
+        .table th,
+        .table td {
+            padding: 15px;
+            text-align: center;
+        }
+
+        .thead-dark {
+            background-color: #4e73df;
+            color: #fff;
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        .text-center {
+            margin-top: 20px;
+        }
+
+    </style>
 </head>
 
 <body>
-    <div class="container mt-5">
-        <h1 class="text-center mb-4">Admin Dashboard</h1>
+    <div class="container">
+        <h1>Admin Dashboard</h1>
         <a href="{{ url_for('manage_courses') }}" class="btn btn-success mb-3">Add or Edit Course</a>
         <a href="{{ url_for('reports') }}" class="btn btn-success mb-3">Report</a>
         <a href="{{ url_for('logout') }}" class="btn btn-outline-dark">Log out</a>
-      
+
         <div class="mb-4">
             <h4>Manage Users</h4>
             <a href="{{ url_for('add_user') }}" class="btn btn-success mb-3">Add User</a>
@@ -34,26 +122,25 @@
                 </thead>
                 <tbody>
                     {% for user in users %}
-                        <tr>
-                            <td>{{ user.id }}</td>
-                            <td>{{ user.username }}</td>
-                            <td>{{ user.first_name }}</td>
-                            <td>{{ user.last_name }}</td>
-                            <td>{{ user.email }}</td>
-                            <td>{{ user.major }}</td>
-                            <td>{{ user.semester }}</td>
-                            <td>
-                                <a href="{{ url_for('edit_user', user_id=user.id) }}" class="btn btn-sm btn-warning">Edit</a>
-                                <a href="{{ url_for('delete_user', user_id=user.id) }}"
-                                    class="btn btn-sm btn-danger"
-                                    onclick="return confirm('Are you sure you want to delete this user?')">Delete</a>
-                            </td>
-                        </tr>
+                    <tr>
+                        <td>{{ user.id }}</td>
+                        <td>{{ user.username }}</td>
+                        <td>{{ user.first_name }}</td>
+                        <td>{{ user.last_name }}</td>
+                        <td>{{ user.email }}</td>
+                        <td>{{ user.major }}</td>
+                        <td>{{ user.semester }}</td>
+                        <td>
+                            <a href="{{ url_for('edit_user', user_id=user.id) }}" class="btn btn-sm btn-warning">Edit</a>
+                            <a href="{{ url_for('delete_user', user_id=user.id) }}"
+                                class="btn btn-sm btn-danger"
+                                onclick="return confirm('Are you sure you want to delete this user?')">Delete</a>
+                        </td>
+                    </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
-
 
         <div class="mb-5">
             <h4>Manage Teachers</h4>
@@ -73,26 +160,26 @@
                 </thead>
                 <tbody>
                     {% for teacher in teachers %}
-                        <tr>
-                            <td>{{ teacher.id }}</td>
-                            <td>{{ teacher.username }}</td>
-                            <td>{{ teacher.first_name }}</td>
-                            <td>{{ teacher.last_name }}</td>
-                            <td>{{ teacher.subjects }}</td>
-                            <td>{{ teacher.office }}</td>
-                            <td>{{ teacher.consultation_hours }}</td>
-                            <td>
-                                <a href="{{ url_for('edit_teacher', teacher_id=teacher.id) }}" class="btn btn-sm btn-warning">Edit</a>
-                                <a href="{{ url_for('delete_teacher', teacher_id=teacher.id) }}" 
-                                    class="btn btn-sm btn-danger"
-                                    onclick="return confirm('Are you sure you want to delete this teacher?')">Delete</a>
-                            </td>
-                        </tr>
+                    <tr>
+                        <td>{{ teacher.id }}</td>
+                        <td>{{ teacher.username }}</td>
+                        <td>{{ teacher.first_name }}</td>
+                        <td>{{ teacher.last_name }}</td>
+                        <td>{{ teacher.subjects }}</td>
+                        <td>{{ teacher.office }}</td>
+                        <td>{{ teacher.consultation_hours }}</td>
+                        <td>
+                            <a href="{{ url_for('edit_teacher', teacher_id=teacher.id) }}" class="btn btn-sm btn-warning">Edit</a>
+                            <a href="{{ url_for('delete_teacher', teacher_id=teacher.id) }}" 
+                                class="btn btn-sm btn-danger"
+                                onclick="return confirm('Are you sure you want to delete this teacher?')">Delete</a>
+                        </td>
+                    </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
-       
+
     </div>
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
         integrity="sha384-qNRpuYw3flS3W4n7MghV8v1eAy0D2ih5GOkCdH/bj+yAbEQ3u6QwXlKluJ2VjZMa"
@@ -103,3 +190,4 @@
 </body>
 
 </html>
+
