@@ -67,21 +67,18 @@
             </div>
             <div class="form-group">
                 <label for="students">Students</label>
-                <select name="students" class="form-control">
+                <select name="students" multiple>
                     {% for user in students %}
-                        <option value="{{ user.id }}" {% if user.id == course.students %}selected{% endif %}>
+                        <option value="{{ user.id }}" {% if user in course.students %}selected{% endif %}>
                             {{ user.first_name }} {{ user.last_name }}
                         </option>
                     {% endfor %}
                 </select>
             </div>
-            <div class="form-group">
-                <label for="subjects">Subjects</label>
-                <input type="text" name="subjects" class="form-control" value="{{ course.subjects }}" required>
-            </div>
             <button type="submit" class="btn btn-primary">Update Course</button>
         </form>
     </div>
+    <a href="{{ url_for('manage_courses') }}" class="btn btn-success">Return back</a>
 </body>
 
 </html>

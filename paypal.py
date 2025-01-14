@@ -98,11 +98,13 @@ def get_payout_status(user_id, batch_id):
             send_payout_email(recipient_email, amount, currency, sent_date)
 
         return {
-            "batch_id": batch_id,
-            "amount": f"{amount} {currency}",
-            "sent_date": sent_date.strftime("%d %B %Y, %H:%M"),
-            "full_response": payout_info
-        }
+    "batch_id": batch_id,
+    "amount": amount,
+    "currency": currency,
+    "sent_date": sent_date.strftime("%d %B %Y, %H:%M"),
+    "full_response": payout_info
+}
+
     else:
         raise Exception(f"Status check error: {response.text}")
 
