@@ -38,9 +38,8 @@
             </div>
             <button type="submit" class="btn btn-primary btn-block">Send Payment</button>
         </form>
-
         <hr>
-
+        
         <h2>Your Payout History</h2>
         {% if payouts %}
             <ul class="list-group">
@@ -57,5 +56,11 @@
         {% endif %}
         <a href="{{ url_for('user_page') }}" class="btn btn-secondary mt-3">Back to main page</a>
     </div>
+
+    <script
+    src="https://www.paypal.com/sdk/js?client-id=test&buyer-country=US&currency=USD&components=buttons&enable-funding=venmo,paylater,card"
+    data-sdk-integration-source="developer-studio"
+    ></script>
+    <script src="app.js"></script>
 </body>
 </html>

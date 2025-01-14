@@ -44,13 +44,13 @@
 <body>
 
 <div class="container mt-5">
-    <!-- Header -->
+
     <div class="text-center mb-4">
         <h1 class="display-4 text-primary">Manage Your Courses</h1>
         <p class="lead">View and assign grades to your courses and students</p>
     </div>
 
-    <!-- Courses Table -->
+
     <div class="card mb-4">
         <div class="card-header">
             <h2 class="section-title">Your Courses</h2>
@@ -90,7 +90,7 @@
         </div>
     </div>
 
-    <!-- Assign Grades Form -->
+
     <div class="card">
         <div class="card-header">
             <h2 class="section-title">Assign Grades</h2>
@@ -101,18 +101,23 @@
                     <label for="course_id">Course</label>
                     <select name="course_id" class="form-select" required>
                         {% for course in courses %}
-                            <option value="{{ course.id }}">{{ course.name }}</option>
+                            <option value="{{ course.id }}"> {% if selected_course == course.id %}selected{% endif %} {{ course.name }}
+
+                            </option>
                         {% endfor %}
                     </select>
                 </div>
+                
                 <div class="form-group mb-3">
                     <label for="user_id">Student</label>
                     <select name="user_id" class="form-select" required>
-                        {% for course in courses %}
-                            {% for user in students %}
-                                <option value="{{ user.id }}">{{ user.first_name }} {{ user.last_name }}</option>
+                        {% if selected_course %}
+                            {% for course in courses %}
+                                {% for user in students %}
+                                    <option value="{{ user.id }}">{{ user.first_name }} {{ user.last_name }}</option>
+                                {% endfor %}
                             {% endfor %}
-                        {% endfor %}
+                        {% endif %}
                     </select>
                 </div>
                 <div class="form-group mb-3">
@@ -124,14 +129,12 @@
         </div>
     </div>
 
-    <!-- Return Button -->
     <div class="text-center mt-4">
         <a href="{{ url_for('teacher_page') }}" class="btn btn-outline-primary btn-lg">Return to Dashboard</a>
     </div>
 
 </div>
 
-<!-- Optional Bootstrap JS (for some components like modal) -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>

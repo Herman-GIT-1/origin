@@ -4,7 +4,7 @@ from datetime import datetime
 from flask_mail import Message
 from extensions import db, mail
 from models import PayoutHistory
-
+from config import Config
 
 PAYPAL_CLIENT_ID = "AcQ6FbG5mrK_58EgrufausOtcBunRViaSvDeQCGBdJFQ3lUWMYik0hZBZsgTgPLSFNPgbS2-lm7b3HVX"
 PAYPAL_SECRET = "ELScVHSJlO6UmZ3L5NaQIWS37kIaZPNKw6i3JLO5CGHv8nze9qxHzA-V7c5Sngr5cOha8Ts3psQxCd5Q"
@@ -110,12 +110,12 @@ def get_payout_status(user_id, batch_id):
 
 def send_payout_email(to_email, amount, currency, sent_date):
     if not mail or not mail.server:
-        print("Error mail server is not made")
+        print("Error: Mail server is not configured")
         return
 
     msg = Message(
         "Payment has been successfully sent",
-        sender="germanq1610@gmail.com",
+        sender=Config.MAIL_DEFAULT_SENDER,
         recipients=[to_email]
     )
     msg.body = f"""
