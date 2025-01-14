@@ -309,69 +309,41 @@ def manage_courses():
 @login_required
 def edit_course(course_id):
     course = Course.query.get(course_id)
-
-    if not course:
-        flash("Course not found!", "error")
-        return redirect(url_for('manage_courses'))
-
+    
     if request.method == 'POST':
         name = request.form.get('name')
         code = request.form.get('code')
         teacher_id = request.form.get('teacher_id')
-        selected_students = request.form.getlist('students')
+        students = request.form.getlist('students')
 
         if not name or not code or not teacher_id:
-            flash("All fields are required!", "error")
+            flash('All fields are required!', 'error')
             return redirect(url_for('edit_course', course_id=course.id))
-
 
         course.name = name
         course.code = code
         course.teacher_id = teacher_id
-
-
-        selected_students_set = set(map(int, selected_students))
-        current_students_set = {s.id for s in course.students}
-
-
-        students_to_remove = current_students_set - selected_students_set
-        for user_id in students_to_remove:
-            user = User.query.get(user_id)
-            if user:
-                course.students.remove(user)
-
-        students_to_add = selected_students_set - current_students_set
-        for user_id in students_to_add:
-            user = User.query.get(user_id)
-            if user:
-                course.students.append(user)
-
+        course.students = students
         db.session.commit()
-        flash("Course updated successfully!", "success")
-        return redirect(url_for('manage_courses'))  
-
-    teachers = Teacher.query.all()
-    students = User.query.all()  
-
-    return render_template("edit_course.html", course=course, teachers=teachers, students=students)
-
+        flash('Course updated successfully!', 'success')
+        return redirect(url_for('manage_courses'))
+    teacher_id = Teacher.query.all()
+    course = Course.query.all()
+    students = User.query.filter_by(account_type='user').all()
+    return render_template('edit_course.html', course=course, teacher_id=teacher_id, students=students)
 
 
-
-@app.route('/delete_course/<int:course_id>', methods=['POST'])
+@app.route('/admin_page/<int:course_id>', methods=['POST'])
 @login_required
 def delete_course(course_id):
     course = Course.query.get(course_id)
-
-    if not course:
-        flash('Course not found!', 'error')
-        return redirect(url_for('manage_courses'))
-
     Enrollment.query.filter_by(course_id=course.id).delete()
-    db.session.delete(course)
-    db.session.commit()
-    
-    flash('Course deleted successfully!', 'success')
+    if course:
+        db.session.delete(course)
+        db.session.commit()
+        flash('Course deleted successfully!', 'success')
+    else:
+        flash('Course not found!', 'error')
     return redirect(url_for('manage_courses'))
 
 
@@ -458,10 +430,11 @@ def payout():
         email = request.form['email'].strip()
         amount = request.form['amount'].strip()
 
+
         if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
             flash("Invalid email address!", "danger")
             return redirect(url_for('payout'))
-
+        
         try:
             amount = float(amount)
             if amount <= 0:
@@ -488,12 +461,22 @@ def payout():
             db.session.commit()
 
             flash(f"Payment successful! Batch ID: {batch_id}", "success")
+            return redirect(url_for('payout', user_id=current_user.id, batch_id=batch_id))
         except Exception as e:
             flash(f"Payment error: {str(e)}", "danger")
 
-    user_payouts = PayoutHistory.query.filter_by(user_id=current_user.id).all()
-    
-    return render_template('payout.html', payouts=user_payouts)
+    return render_template('payout.html')
+
+@app.route('/payout_status/<int:user_id>/<batch_id>')
+@login_required
+def payout_status(user_id, batch_id):
+    if user_id == current_user.id:
+        try:
+            status_response = get_payout_status(user_id, batch_id)
+            return render_template('payout_status.html', status=status_response)
+        except Exception as e:
+            flash(f"Error fetching payout status: {str(e)}", "danger")
+            return redirect(url_for('payout'))
 
 
 #Module 8

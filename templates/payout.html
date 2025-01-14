@@ -1,66 +1,74 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Payout</title>
+    <title>PayPal Payout</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css">
-    <style>
+    <!-- Inline styles removed -->
+<style>
         body {
-            background-color: #f4f7fc;
-            padding: 20px;
+            background-color: #f8f9fa;
         }
+
         .container {
             max-width: 600px;
-            margin: 0 auto;
-            background-color: #fff;
-            padding: 30px;
+            margin-top: 50px;
+            background-color: white;
+            padding: 20px;
             border-radius: 10px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
+
         h2 {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        button[type="submit"] {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #0056b3;
         }
     </style>
 </head>
+
 <body>
+
     <div class="container">
-        <h2>Make a Payout</h2>
-        <form method="POST">
+        <h2>Send PayPal Payout</h2>
+
+        <!-- Payout Form -->
+        <form method="POST" action="{{ url_for('payout') }}">
             <div class="form-group">
                 <label for="email">Recipient Email:</label>
-                <input type="email" name="email" id="email" class="form-control" required>
+                <input type="email" id="email" name="email" class="form-control" required>
             </div>
+
             <div class="form-group">
-                <label for="amount">Amount:</label>
-                <input type="number" step="0.01" name="amount" id="amount" class="form-control" required>
+                <label for="amount">Amount (USD):</label>
+                <input type="number" id="amount" name="amount" class="form-control" step="0.01" required>
             </div>
-            <button type="submit" class="btn btn-primary btn-block">Send Payment</button>
+
+            <button type="submit" class="btn btn-primary">Send Payment</button>
         </form>
-        <hr>
-        
-        <h2>Your Payout History</h2>
-        {% if payouts %}
-            <ul class="list-group">
-                {% for payout in payouts %}
-                    <li class="list-group-item">
-                        <strong>Batch ID:</strong> {{ payout.batch_id }}<br>
-                        <strong>Amount:</strong> ${{ payout.amount }} {{ payout.currency }}<br>
-                        <strong>Sent Date:</strong> {{ payout.sent_date.strftime('%d %B %Y, %H:%M') }}<br>
-                    </li>
-                {% endfor %}
-            </ul>
-        {% else %}
-            <p>No payouts found.</p>
-        {% endif %}
-        <a href="{{ url_for('user_page') }}" class="btn btn-secondary mt-3">Back to main page</a>
     </div>
 
-    <script
-    src="https://www.paypal.com/sdk/js?client-id=test&buyer-country=US&currency=USD&components=buttons&enable-funding=venmo,paylater,card"
-    data-sdk-integration-source="developer-studio"
-    ></script>
-    <script src="app.js"></script>
+    {% extends 'payout_status.html' %}
+
 </body>
+
 </html>
