@@ -62,7 +62,7 @@
                         {% for schedule in course.course_schedule %}
                             <div>
                                 <span class="schedule-day">{{ schedule.day_of_week }}:</span>
-                                <span class="schedule-time">{{ schedule.start_time }} - {{ schedule.end_time }}</span>
+                                <span class="schedule-time">{{ schedule.start_time('%H:%M') }} - {{ schedule.end_time('%H:%M') }}</span>
                             </div>
                         {% endfor %}
                     {% else %}

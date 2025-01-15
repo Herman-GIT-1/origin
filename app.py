@@ -486,7 +486,7 @@ def payout():
             )
             db.session.add(new_payout)
             db.session.commit()
-
+            
             flash(f"Payment successful! Batch ID: {batch_id}", "success")
         except Exception as e:
             flash(f"Payment error: {str(e)}", "danger")

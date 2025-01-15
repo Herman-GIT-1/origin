@@ -111,7 +111,7 @@
                 <div class="form-group mb-3">
                     <label for="user_id">Student</label>
                     <select name="user_id" class="form-select" required>
-                            {% for course_id in courses %}
+                            {% for selected_course in courses %}
                                 {% for user in students %}
                                     <option value="{{ user.id }}">{{ user.first_name }} {{ user.last_name }}</option>
                                 {% endfor %}
