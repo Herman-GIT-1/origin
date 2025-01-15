@@ -495,7 +495,11 @@ def payout():
     
     return render_template('payout.html', payouts=user_payouts)
 
-
+@app.route('/admin_payhistory')
+@login_required
+def admin_payhistory():
+    payouts = PayoutHistory.query.order_by(PayoutHistory.sent_date.desc()).all()
+    return render_template('admin_payhistory.html', payouts=payouts)
 #Module 8
 
 @app.route('/reports')

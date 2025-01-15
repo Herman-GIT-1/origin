@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Payout History</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-4">
+        <h2>Payout History</h2>
+
+        {% if payouts %}
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Email</th>
+                        <th>Amount</th>
+                        <th>Currency</th>
+                        <th>Date</th>
+                        <th>Batch ID</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for payout in payouts %}
+                        <tr>
+                            <td>{{ payout.user.first_name }} {{ payout.user.last_name }}</td>
+                            <td>{{ payout.recipient_email }}</td>
+                            <td>${{ payout.amount }}</td>
+                            <td>{{ payout.currency }}</td>
+                            <td>{{ payout.sent_date.strftime('%d %B %Y, %H:%M') }}</td>
+                            <td>{{ payout.batch_id }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No payouts found.</p>
+        {% endif %}
+        
+        <a href="{{ url_for('admin_page') }}" class="btn btn-primary">Back to Dashboard</a>
+    </div>
+</body>
+</html>
