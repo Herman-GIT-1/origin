@@ -61,16 +61,23 @@
                 <label for="name">Course Name</label>
                 <input type="text" name="name" class="form-control" value="{{ course.name }}" required>
             </div>
-            <select name="teacher_id" class="form-control">
-                {% for teacher in teachers %}
-                    <option value="{{ teacher.id }}" {% if teacher.id == course.teacher_id %} selected{% endif %}>
-                        {{ teacher.first_name }} {{ teacher.last_name }}
-                    </option>
-                {% endfor %}
-            </select>
+            <div class="form-group">
+                <label for="code">Course Code</label>
+                <input type="text" name="code" class="form-control" value="{{ course.code }}" required>
+            </div>
+            <div class="form-group">
+                <label for="teacher_id">Teacher</label>
+                <select name="teacher_id" class="form-control" required>
+                    {% for teacher in teachers %}
+                        <option value="{{ teacher.id }}" {% if teacher.id == course.teacher_id %}selected{% endif %}>
+                            {{ teacher.first_name }} {{ teacher.last_name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
             <div class="form-group">
                 <label for="students">Students</label>
-                <select name="students[]" multiple class="form-control">
+                <select name="students" multiple class="form-control">
                     {% for user in students %}
                         <option value="{{ user.id }}" {% if user in course.students %}selected{% endif %}>
                             {{ user.first_name }} {{ user.last_name }}
@@ -80,8 +87,8 @@
             </div>
             <button type="submit" class="btn btn-primary">Update Course</button>
         </form>
+        <a href="{{ url_for('manage_courses') }}" class="btn btn-success mt-3">Return Back</a>
     </div>
-    <a href="{{ url_for('manage_courses') }}" class="btn btn-secondary btn-block">Return Back</a>
 </body>
 
 </html>

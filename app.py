@@ -324,15 +324,12 @@ def edit_course(course_id):
             flash("All fields are required!", "error")
             return redirect(url_for('edit_course', course_id=course.id))
 
-
         course.name = name
         course.code = code
-        course.teacher_id = teacher_id
-
+        course.teacher_id = int(teacher_id)
 
         selected_students_set = set(map(int, selected_students))
-        current_students_set = {s.id for s in course.students}
-
+        current_students_set = {s.id for s in course.students}  
 
         students_to_remove = current_students_set - selected_students_set
         for user_id in students_to_remove:
@@ -346,14 +343,20 @@ def edit_course(course_id):
             if user:
                 course.students.append(user)
 
-        db.session.commit()
-        flash("Course updated successfully!", "success")
-        return redirect(url_for('manage_courses'))  
+        try:
+            db.session.commit()
+            flash("Course updated successfully!", "success")
+        except Exception as e:
+            db.session.rollback()
+            flash(f"An error occurred: {e}", "error")
+
+        return redirect(url_for('manage_courses'))
 
     teachers = Teacher.query.all()
-    students = User.query.all()  
+    students = User.query.all()
 
     return render_template("edit_course.html", course=course, teachers=teachers, students=students)
+
 
 
 
