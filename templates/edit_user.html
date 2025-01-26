@@ -61,35 +61,41 @@
 </head>
 
 <body>
-    <div class="container">
-        <h1>Edit Teacher</h1>
-
-        <form method="POST" action="{{ url_for('edit_teacher', teacher_id=teacher.id) }}">
+    <div class="container mt-5">
+        <h2>Edit User</h2>
+        <form method="POST" action="{{ url_for('edit_user', user_id=user.id) }}">
             <div class="form-group">
                 <label for="username">Username</label>
-                <input type="text" name="username" class="form-control" value="{{ teacher.username }}" required>
+                <input type="text" class="form-control" id="username" name="username" value="{{ user.username }}" required>
             </div>
             <div class="form-group">
                 <label for="first_name">First Name</label>
-                <input type="text" name="first_name" class="form-control" value="{{ teacher.first_name }}">
+                <input type="text" class="form-control" id="first_name" name="first_name" value="{{ user.first_name }}" required>
             </div>
             <div class="form-group">
                 <label for="last_name">Last Name</label>
-                <input type="text" name="last_name" class="form-control" value="{{ teacher.last_name }}">
+                <input type="text" class="form-control" id="last_name" name="last_name" value="{{ user.last_name }}" required>
             </div>
             <div class="form-group">
-                <label for="subjects">Subjects</label>
-                <input type="text" name="subjects" class="form-control" value="{{ teacher.subjects }}" required>
+                <label for="email">Email</label>
+                <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}">
             </div>
             <div class="form-group">
-                <label for="office">Office</label>
-                <input type="text" name="office" class="form-control" value="{{ teacher.office }}">
+                <label for="major">Major</label>
+                <input type="text" class="form-control" id="major" name="major" value="{{ user.major }}">
             </div>
             <div class="form-group">
-                <label for="consultation_hours">Consultation Hours</label>
-                <input type="text" name="consultation_hours" class="form-control" value="{{ teacher.consultation_hours }}">
+                <label for="semester">Semester</label>
+                <select type="number" class="form-select" id="semester" name="semester" value="{{ user.semester }}">
+                    <option selected disabled value="">Year</option>
+                    <option>1</option>
+                    <option>2</option>
+                    <option>3</option>
+                    <option>4</option>
+                    <option>5</option>
+                </select>
             </div>
-            <button type="submit" class="btn btn-primary">Update Teacher</button>
+            <button type="submit" class="btn btn-primary">Update User</button>
         </form>
     </div>
 </body>
