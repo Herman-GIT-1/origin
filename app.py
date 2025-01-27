@@ -5,7 +5,7 @@ from datetime import datetime
 from config import Config
 from extensions import db, mail, login_manager
 from flask_migrate import Migrate
-from models import BaseUser, User, Teacher, Admin, Enrollment, Course, DaysOfWeek ,Schedule, PayoutHistory
+from models import BaseUser, User, Teacher, Admin, Enrollment, Course,Schedule, PayoutHistory
 import re
 
 app = Flask(__name__)
@@ -422,35 +422,86 @@ def edit_course_schedule(course_id):
 
     if request.method == 'POST':
         try:
-            new_day = request.form['day_of_week']
+            new_month = int(request.form['month'])  
+            new_day = int(request.form['day'])      
             start_time = datetime.strptime(request.form['start_time'], "%H:%M").time()
             end_time = datetime.strptime(request.form['end_time'], "%H:%M").time()
 
+            if new_month < 1 or new_month > 12:
+                flash('Invalid month. Please enter a value between 1 and 12.', 'danger')
+                return render_template(
+                    'edit_course_schedule.html',
+                    course=course,
+                    month=new_month,
+                    day=new_day,
+                    start_time=request.form.get('start_time'),
+                    end_time=request.form.get('end_time'),
+                )
+            if new_day < 1 or new_day > 31:
+                flash('Invalid day. Please enter a value between 1 and 31.', 'danger')
+                return render_template(
+                    'edit_course_schedule.html',
+                    course=course,
+                    month=new_month,
+                    day=new_day,
+                    start_time=request.form.get('start_time'),
+                    end_time=request.form.get('end_time'),
+                )
+
             if start_time >= end_time:
                 flash('End time must be later than start time.', 'danger')
-                return redirect(url_for('edit_course_schedule', course_id=course_id))
+                return render_template(
+                    'edit_course_schedule.html',
+                    course=course,
+                    month=new_month,
+                    day=new_day,
+                    start_time=request.form.get('start_time'),
+                    end_time=request.form.get('end_time'),
+                )
 
-            existing_schedule = Schedule.query.filter_by(course_id=course_id, day_of_week=new_day).first()
-            if existing_schedule and existing_schedule.id != schedule.id:
-                flash('A schedule for this day already exists.', 'warning')
-                return redirect(url_for('edit_course_schedule', course_id=course_id))
+            existing_schedule = Schedule.query.filter_by(course_id=course_id, month=new_month, day=new_day).first()
+            if existing_schedule and (not schedule or existing_schedule.id != schedule.id):
+                flash('A schedule for this month and day already exists.', 'warning')
+                return render_template(
+                    'edit_course_schedule.html',
+                    course=course,
+                    month=new_month,
+                    day=new_day,
+                    start_time=request.form.get('start_time'),
+                    end_time=request.form.get('end_time'),
+                )
 
             if not schedule:
-                schedule = Schedule(course_id=course_id, day_of_week=new_day, start_time=start_time, end_time=end_time)
+                schedule = Schedule(
+                    course_id=course_id,
+                    month=new_month,
+                    day=new_day,
+                    start_time=start_time,
+                    end_time=end_time
+                )
                 db.session.add(schedule)
             else:
-                schedule.day_of_week = new_day
+                schedule.month = new_month
+                schedule.day = new_day
                 schedule.start_time = start_time
                 schedule.end_time = end_time
 
             db.session.commit()
             flash('Course schedule updated successfully!', 'success')
             return redirect(url_for('manage_courses'))
-        
-        except ValueError:
-            flash('Invalid time format. Please enter a valid time.', 'danger')
 
-    return render_template('edit_course_schedule.html', course=course)
+        except ValueError:
+            flash('Invalid input. Please check your data and try again.', 'danger')
+
+    return render_template(
+        'edit_course_schedule.html',
+        course=course,
+        month=schedule.month if schedule else None,
+        day=schedule.day if schedule else None,
+        start_time=schedule.start_time.strftime("%H:%M") if schedule else None,
+        end_time=schedule.end_time.strftime("%H:%M") if schedule else None,
+    )
+
 
 
 #Module №7

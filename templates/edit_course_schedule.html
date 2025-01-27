@@ -66,16 +66,15 @@
 
         <form method="POST" onsubmit="return validateTimes()">
             <div class="form-group">
-                <label for="day_of_week">Day of the Week</label>
-                <select name="day_of_week" class="form-control">
-                    <option value="MONDAY">Monday</option>
-                    <option value="TUESDAY">Tuesday</option>
-                    <option value="WEDNESDAY">Wednesday</option>
-                    <option value="THURSDAY">Thursday</option>
-                    <option value="FRIDAY">Friday</option>
-                    <option value="SATURDAY">Saturday</option>
-                    <option value="SUNDAY">Sunday</option>
-                </select>
+                <label for="month">Month</label>
+                <input type="number" id="month" name="month" class="form-control"
+                    value="{{ schedule.month if schedule else '' }}" min="1" max="12" required>
+            </div>
+
+            <div class="form-group">
+                <label for="day">Day</label>
+                <input type="number" id="day" name="day" class="form-control"
+                    value="{{ schedule.day if schedule else '' }}" min="1" max="31" required>
             </div>
 
             <div class="form-group">
@@ -97,6 +96,8 @@
             End time must be later than start time.
         </div>
     </div>
+
+
 
     <script>
         function validateTimes() {

@@ -31,8 +31,8 @@ class Admin(BaseUser):
 
 class Enrollment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete="CASCADE"), nullable=False)
-    course_id = db.Column(db.Integer, db.ForeignKey('course.id', ondelete="CASCADE"), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id',name='fk_enrollment_user_id', ondelete="CASCADE"), nullable=False)
+    course_id = db.Column(db.Integer, db.ForeignKey('course.id',name='fk_enrollment_course_id', ondelete="CASCADE"), nullable=False)
     grade = db.Column(db.Float, nullable=True)
 
     __table_args__ = (
@@ -47,23 +47,15 @@ class Course(db.Model):
     students = db.relationship('User', secondary='enrollment', back_populates='enrolled_courses')
     course_schedule = db.relationship('Schedule', back_populates='course', cascade="all, delete-orphan") 
 
-class DaysOfWeek(enum.Enum):
-    MONDAY = "MONDAY"
-    TUESDAY = "TUESDAY"
-    WEDNESDAY = "WEDNESDAY"
-    THURSDAY = "THURSDAY"
-    FRIDAY = "FRIDAY"
-    SATURDAY = "SATURDAY"
-    SUNDAY = "SUNDAY"
-
-
 class Schedule(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     course_id = db.Column(db.Integer, db.ForeignKey('course.id', name="fk_schedule_course"), nullable=False)
-    day_of_week = db.Column(db.Enum(DaysOfWeek), nullable=False)
+    month = db.Column(db.Integer, nullable=False)
+    day = db.Column(db.Integer, nullable=False)
     start_time = db.Column(db.Time, nullable=False)
     end_time = db.Column(db.Time, nullable=False)
     course = db.relationship('Course', back_populates='course_schedule')
+
 
 
 class PayoutHistory(db.Model):
