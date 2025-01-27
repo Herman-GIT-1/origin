@@ -1,0 +1,1 @@
+In summary we have a fully working university site in python using flask library with SQLite database, it's an university python project for first year students... ChatGPT was used only for helping with migrations and paypal module(a little bit)
